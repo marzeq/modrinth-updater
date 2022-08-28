@@ -2,7 +2,7 @@
 
 A simple CLI tool to update your mods from a config file using the modrinth API
 
-**MAKE SURE TO BACKUP YOUR MODS FOLDER BEFORE YOU USE THIS SOFTWARE!!! I AM NOT RESPONSIBLE FOR ANY DAMAGE CREATED BY THIS SOFTWARE!!!**
+**THIS IS BETA SOFTWARE!!! MAKE SURE TO BACKUP YOUR MODS FOLDER BEFORE YOU USE THIS SOFTWARE!!! I AM NOT RESPONSIBLE FOR ANY DAMAGE CAUSED BY THIS SOFTWARE!!!**
 
 ## Setup
 
@@ -12,6 +12,7 @@ Create a .modlist.json file in your mods folder that looks something like this:
 ```json
 {
     "minecraftVersion": "(the minecraft version you play on)",
+    "loaderType": "(fabric, forge or quilt)",
     "mods": [
         "(last part of the project's url on modrinth e.g. fabric-api for the Fabric API)",
         "(put more mods on a new line and make sure there's a comma at the end of the previous line)",
@@ -26,6 +27,7 @@ For example, this is my config file:
 ```json
 {
     "minecraftVersion": "1.19.2",
+    "loaderType": "fabric",
     "mods": [
         "fabric-api",
         "sodium",

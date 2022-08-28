@@ -30,7 +30,7 @@ switch (os) {
 }
 
 if (os === "unknown" && process.argv.length < 3) {
-	console.error("Unknown OS and no mod folder path specified")
+	console.error("Unknown OS and no mod folder path specified! Please specify a mod folder path.")
 	process.exit(1)
 }
 
@@ -45,6 +45,7 @@ try {
 		configPath,
 		`{
     "minecraftVersion": "1.19.2",
+	"loaderType": "fabric",
     "mods": []
 }`
 	)
@@ -52,6 +53,7 @@ try {
 
 const modlist: {
 	minecraftVersion: string
+	loaderType: "fabric" | "forge" | "quilt"
 	mods: string[]
 } = JSON.parse(await fs.readFile(configPath, "utf8"))
 
@@ -67,7 +69,7 @@ type File = {
 
 const latestModIds = (await Promise.all(
 	modlist.mods.map(async mod => {
-		const res = await fetch(`https://api.modrinth.com/v2/project/${mod}/version?game_versions=["${modlist.minecraftVersion}"]`),
+		const res = await fetch(`https://api.modrinth.com/v2/project/${mod}/version?game_versions=["${modlist.minecraftVersion}"]&loaders=["${modlist.loaderType}"]`),
 			json: {
 				version_type: string
 				id: string
