@@ -1,7 +1,7 @@
 {
     "name": "modrinth-updater",
     "version": "0.0.1",
-    "main": "./dist/index.js",
+    "bin": "./dist/index.js",
     "license": "MIT",
     "description": "A simple CLI tool to update your mods from a config file using the modrinth API",
     "author": {
