@@ -48,6 +48,7 @@ try {
 		`{
     "minecraftVersion": "1.19.2",
 	"loaderType": "fabric",
+	"allowBeta": false,
     "mods": []
 }`
 	)
@@ -56,6 +57,7 @@ try {
 const modlist: {
 	minecraftVersion: string
 	loaderType: "fabric" | "forge" | "quilt"
+	allowBeta: boolean
 	mods: string[]
 } = JSON.parse(await fs.readFile(configPath, "utf8"))
 
@@ -77,7 +79,7 @@ const getLatestFiles = async (mod: string, mcVersion: string = modlist.minecraft
 			files: File[]
 		}[] = (await res.json()) as any
 	
-	const fullRelease = json.filter(v => v.version_type === "release")[0]
+	const fullRelease = json.filter(v => v.version_type === "release" || modlist.allowBeta)[0]
 
 	if (!fullRelease) {
 		if (mcVersion.split(".").length > 2) {

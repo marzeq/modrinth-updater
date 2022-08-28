@@ -13,6 +13,7 @@ Create a .modlist.json file in your mods folder that looks something like this:
 {
     "minecraftVersion": "(the minecraft version you play on)",
     "loaderType": "(fabric, forge or quilt)",
+    "allowBeta": "(whether to allow beta versions to be downloaded. true or false)",
     "mods": [
         "(last part of the project's url on modrinth e.g. fabric-api for the Fabric API)",
         "(put more mods on a new line and make sure there's a comma at the end of the previous line)",
@@ -28,6 +29,7 @@ For example, this is my config file:
 {
     "minecraftVersion": "1.19.2",
     "loaderType": "fabric",
+    "allowBeta": false,
     "mods": [
         "fabric-api",
         "sodium",
@@ -49,4 +51,11 @@ For example, this is my config file:
 
 ```
 $ npx modrinth-updater [path to mods folder if it's somewhere else (optional)]
+```
+
+You can also install the package globally and run it like this:
+
+```
+$ npm install -g modrinth-updater
+$ modrinth-updater [path to mods folder if it's somewhere else (optional)]
 ```
