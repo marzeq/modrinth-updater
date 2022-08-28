@@ -1,0 +1,22 @@
+{
+    "name": "modrinth-updater",
+    "version": "0.0.1",
+    "main": "./dist/index.js",
+    "license": "MIT",
+    "description": "A simple CLI tool to update your mods from a config file using the modrinth API",
+    "author": {
+        "name": "marzeq",
+        "url": "https://marzeq.me"
+    },
+    "type": "module",
+    "dependencies": {},
+    "devDependencies": {
+        "@types/node": "^18.7.13",
+        "rimraf": "^3.0.2",
+        "typescript": "^4.5.4"
+    },
+    "scripts": {
+        "start": "rimraf dist/ && tsc && node --no-warnings dist/index.js",
+        "prepublish": "rimraf dist/ && tsc"
+    }
+}
