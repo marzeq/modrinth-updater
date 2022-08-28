@@ -1,5 +1,6 @@
 import fs from "node:fs/promises"
 import crypto from "node:crypto"
+import { input } from "@marzeq/awaitinput"
 
 let os: "windows" | "linux" | "macos" | "unknown" = "unknown"
 
@@ -67,22 +68,36 @@ type File = {
 	}
 }
 
+const getLatestFiles = async (mod: string, mcVersion: string = modlist.minecraftVersion): Promise<[string, File[] | null]> => {
+	const res = await fetch(`https://api.modrinth.com/v2/project/${mod}/version?game_versions=["${mcVersion}"]&loaders=["${modlist.loaderType}"]`),
+		json: {
+			version_type: string
+			id: string
+			files: File[]
+		}[] = await res.json()
+	
+	const fullRelease = json.filter(v => v.version_type === "release")[0]
+
+	if (!fullRelease) {
+		if (mcVersion.split(".").length > 2) {
+			const newVersion = mcVersion.split(".")[0] + "." + mcVersion.split(".")[1]
+			console.warn(`!!! No release of ${mod} found for Minecraft version ${mcVersion}, falling back to ${newVersion}. The mod is not guaranteed to work with ${mcVersion}. If your game crashes, the mod is probably not compatible.`)
+			const inp = await input("If you wish to continue, type 'I understand'. Type anything else or press ENTER to abort.\n")
+
+			if (inp.toLowerCase() !== "i understand")
+				process.exit(0)
+
+			return await getLatestFiles(mod, newVersion)
+		}
+		return [mod, null]
+	}
+
+	return [mod, fullRelease.files]
+}
+
 const latestModIds = (await Promise.all(
-	modlist.mods.map(async mod => {
-		const res = await fetch(`https://api.modrinth.com/v2/project/${mod}/version?game_versions=["${modlist.minecraftVersion}"]&loaders=["${modlist.loaderType}"]`),
-			json: {
-				version_type: string
-				id: string
-				files: File[]
-			}[] = await res.json()
-
-		const fullRelease = json.filter(v => v.version_type === "release")[0]
-
-		if (!fullRelease) return [mod, null]
-
-		return [mod, fullRelease.files]
-	})
-)) as [string, File[] | null][]
+	modlist.mods.map(async mod => getLatestFiles(mod))
+)) 
 
 const notFoundMods = latestModIds.filter(([, files]) => files === null) as [string, null][]
 

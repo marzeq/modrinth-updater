@@ -2,6 +2,18 @@
 # yarn lockfile v1
 
 
+"@marzeq/awaitinput@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@marzeq/awaitinput/-/awaitinput-1.0.2.tgz#1cc30dd222fc6fd3f553d3831b3c3039617e018e"
+  integrity sha512-7eO6dSUYivB9jJKC6/LVCn9NUI0ZBTGiiT4D+1oYW8dGUyyxGp4IcO1EpD5o1MlipTpTqg/gyIEb3baiCL+UyA==
+  dependencies:
+    "@types/node" "^17.0.31"
+
+"@types/node@^17.0.31":
+  version "17.0.45"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.45.tgz#2c0fafd78705e7a18b7906b5201a522719dc5190"
+  integrity sha512-w+tIMs3rq2afQdsPJlODhoUEKzFP1ayaoyl1CcnwtIlsVe7K7bA1NGm4s3PraqTLlXnbIN84zuBlxBWo1u9BLw==
+
 "@types/node@^18.7.13":
   version "18.7.13"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.7.13.tgz#23e6c5168333480d454243378b69e861ab5c011a"
