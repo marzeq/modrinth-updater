@@ -1,5 +1,6 @@
 import fs from "node:fs/promises"
 import crypto from "node:crypto"
+import fetch from "node-fetch"
 import { input } from "@marzeq/awaitinput"
 
 let os: "windows" | "linux" | "macos" | "unknown" = "unknown"
@@ -74,7 +75,7 @@ const getLatestFiles = async (mod: string, mcVersion: string = modlist.minecraft
 			version_type: string
 			id: string
 			files: File[]
-		}[] = await res.json()
+		}[] = (await res.json()) as any
 	
 	const fullRelease = json.filter(v => v.version_type === "release")[0]
 

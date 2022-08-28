@@ -2,7 +2,7 @@
     "compilerOptions": {
         "target": "es2021",
         "outDir": "./dist",
-        "module": "NodeNext",
+        "module": "Node16",
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "strict": true,
