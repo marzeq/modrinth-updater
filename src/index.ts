@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import fs from "node:fs/promises"
 import crypto from "node:crypto"
 import fetch from "node-fetch"
