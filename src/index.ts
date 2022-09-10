@@ -9,7 +9,7 @@ if (process.argv.find(v => "--help" === v || "-h" === v)) {
 	console.log(`Usage: <command> [path to mods folder if it's somewhere else (optional)]`)
 	process.exit(0)
 } else if (process.argv.find(v => "--version" === v || "-v" === v)) {
-	console.log(`Version: 0.0.11`)
+	console.log(`Version: 0.0.13`)
 	process.exit(0)
 }
 
@@ -71,7 +71,7 @@ try {
 
 const modlistValidator = z.object({
 	minecraftVersion: z.string(),
-	loaderType: z.enum(["fabric", "forge", "quilt"]),
+	loaderType: z.enum(["fabric", "forge", "quilt", "liteloader"]),
 	unsafe: z.object({
 		allowFailHash: z.boolean().default(false),
 		allowUnstable: z.boolean().default(false)

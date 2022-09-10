@@ -12,7 +12,7 @@ Create a .modlist.json file in your mods folder that looks something like this:
 ```json
 {
     "minecraftVersion": "(the minecraft version you play on)",
-    "loaderType": "(fabric, forge or quilt)",
+    "loaderType": "(fabric, forge, quilt or liteloader)",
     "unsafe": {
         "allowUnstable": "(true or false)",
         "allowFailHash": "(true or false)"
