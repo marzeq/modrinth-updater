@@ -5,6 +5,11 @@ import fetch from "node-fetch"
 import { input } from "@marzeq/awaitinput"
 import { z } from "zod"
 
+if (process.argv.find(v => /--help|-h|--?|-?|\/help|\/h|\/\?/.test(v))) {
+	console.log(`Usage: <command> [path to mods folder if it's somewhere else (optional)]`)
+	process.exit(0)
+}
+
 let os: "windows" | "linux" | "macos" | "unknown" = "unknown"
 
 switch (process.platform) {
