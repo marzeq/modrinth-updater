@@ -13,7 +13,10 @@ Create a .modlist.json file in your mods folder that looks something like this:
 {
     "minecraftVersion": "(the minecraft version you play on)",
     "loaderType": "(fabric, forge or quilt)",
-    "allowBeta": "(whether to allow beta versions to be downloaded. true or false)",
+    "unsafe": {
+        "allowUnstable": "(true or false)",
+        "allowFailHash": "(true or false)"
+    },
     "mods": [
         "(last part of the project's url on modrinth e.g. fabric-api for the Fabric API)",
         "(put more mods on a new line and make sure there's a comma at the end of the previous line)",
@@ -29,7 +32,10 @@ For example, this is my config file:
 {
     "minecraftVersion": "1.19.2",
     "loaderType": "fabric",
-    "allowBeta": false,
+    "unsafe": {
+        "allowUnstable": false,
+        "allowFailHash": false
+    },
     "mods": [
         "fabric-api",
         "sodium",
