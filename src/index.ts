@@ -3,6 +3,7 @@ import fs from "node:fs/promises"
 import crypto from "node:crypto"
 import fetch from "node-fetch"
 import { input } from "@marzeq/awaitinput"
+import { z } from "zod"
 
 let os: "windows" | "linux" | "macos" | "unknown" = "unknown"
 
@@ -49,78 +50,157 @@ try {
 		`{
     "minecraftVersion": "1.19.2",
 	"loaderType": "fabric",
-	"allowBeta": false,
+	"unsafe": {
+		"allowFailHash": false,
+		"allowUnstable": false
+	},
     "mods": []
 }`
 	)
 }
 
-const modlist: {
-	minecraftVersion: string
-	loaderType: "fabric" | "forge" | "quilt"
-	allowBeta: boolean
-	mods: string[]
-} = JSON.parse(await fs.readFile(configPath, "utf8"))
+const modlistValidator = z.object({
+	minecraftVersion: z.string(),
+	loaderType: z.enum(["fabric", "forge", "quilt"]),
+	unsafe: z.object({
+		allowFailHash: z.boolean().default(false),
+		allowUnstable: z.boolean().default(false)
+	}).default({ allowFailHash: false, allowUnstable: false }),
+	mods: z.array(z.string())
+})
 
-type File = {
-	url: string
-	filename: string
-	primary: boolean
-	hashes: {
-		sha512?: string
-		sha1?: string
+type ModListConfig = z.infer<typeof modlistValidator>
+
+const rawModlist: ModListConfig = JSON.parse(await fs.readFile(configPath, "utf8"))
+
+const parseResult = modlistValidator.safeParse(rawModlist)
+
+if (!parseResult.success) {
+	console.error("Invalid config file!")
+	process.exit(1)
+}
+
+const modlist = parseResult.data
+
+for (const [k, v] of Object.entries(modlist.unsafe)) {
+	if (v === true) {
+		if (k === "allowFailHash") {
+			const inp = await input(`!!! WARNING !!!
+Unsafe mode enabled: allowFailHash!
+This will allow mods to be installed even if their hash does not match the one specified by the mod author.
+This is a MAJOR security risk, as it allows infected mods to be installed without them being checked.
+DO NOT ENABLE THIS OPTION IF YOU DO NOT KNOW WHAT YOU ARE DOING!!!
+THE AUTHOR OF THIS PROGRAM IS NOT RESPONSIBLE FOR __ANY__ DAMAGE CAUSED BY THIS OPTION.
+!!! WARNING !!!
+
+Do you wish to continue? AGAIN, DO NOT CONTINUE IF YOU DON'T KNOW WHAT YOU'RE DOING [y/N] `)
+			if (!/^y/i.test(inp))
+				process.exit(0)
+			
+			const inp2 = await input("This is a very bad idea, are you sure? [y/N] ")
+
+			if (!/^y/i.test(inp2))
+				process.exit(0)
+			
+			const inp3 = await input("Are you REALLY sure? [y/N] ")
+
+			if (!/^y/i.test(inp3))
+				process.exit(0)
+			
+			const inp4 = await input("Are you REALLY REALLY sure? THIS IS YOUR LAST CHANCE TO SAY NO [y/N] ")
+
+			if (!/^y/i.test(inp4))
+				process.exit(0)
+			
+			console.log("Ok, you asked for it.")
+		} else if (k === "allowBeta") {
+			const inp = await input(`!!! WARNING !!!
+Unsafe mode enabled: allowBeta!
+This will allow mods to be installed even if they are marked as beta.
+These mods are not guaranteed to work, and may cause issues.
+If your game crashes/has other issues with this option enabled, it's probably because of a beta mod.
+!!! WARNING !!!
+
+Do you wish to continue? [y/N] `)
+
+			if (!/^y/i.test(inp))
+				process.exit(0)
+			
+			console.log("Ok, you asked for it.")
+		}
 	}
 }
 
-const getLatestFiles = async (mod: string, mcVersion: string = modlist.minecraftVersion): Promise<[string, File[] | null]> => {
-	const res = await fetch(`https://api.modrinth.com/v2/project/${mod}/version?game_versions=["${mcVersion}"]&loaders=["${modlist.loaderType}"]`),
-		json: {
-			version_type: string
-			id: string
-			files: File[]
-		}[] = (await res.json()) as any
-	
-	const fullRelease = json.filter(v => v.version_type === "release" || modlist.allowBeta)[0]
+const typeValidator = z.object({
+	url: z.string(),
+	filename: z.string(),
+	primary: z.boolean(),
+	hashes: z.object({
+		sha512: z.string().optional(),
+		sha1: z.string().optional()
+	})
+})
 
-	if (!fullRelease) {
+type File = z.infer<typeof typeValidator>
+
+const getLatestFiles = async (mod: string, mcVersion: string = modlist.minecraftVersion): Promise<[string, File[]]> => {
+	const apiResponseValidator = z.array(z.object({
+		version_type: z.string(),
+		id: z.string(),
+		files: z.array(typeValidator)
+	}))
+
+	const res = await fetch(`https://api.modrinth.com/v2/project/${mod}/version?game_versions=["${mcVersion}"]&loaders=["${modlist.loaderType}"]`),
+		json = (await res.json()) as any
+	
+	if (!res.ok) {
+		console.error(`Failed to fetch mod data for ${mod}!`)
+		process.exit(1)
+	}
+
+	const parsed = apiResponseValidator.parse(json)
+	
+	const fullReleaseCount = parsed.filter(v => v.version_type === "release").length
+
+	if (fullReleaseCount === 0 && !modlist.unsafe.allowUnstable) {
 		if (mcVersion.split(".").length > 2) {
 			const newVersion = mcVersion.split(".")[0] + "." + mcVersion.split(".")[1]
 			console.warn(`!!! No release of ${mod} found for Minecraft version ${mcVersion}, falling back to ${newVersion}. The mod is not guaranteed to work with ${mcVersion}. If your game crashes, the mod is probably not compatible.`)
-			const inp = await input("If you wish to continue, type 'I understand'. Type anything else or press ENTER to abort.\n")
+			const inp = await input("Do you wish to continue? [y/N] ")
 
-			if (inp.toLowerCase() !== "i understand")
+			if (!/^y/i.test(inp))
 				process.exit(0)
 
 			return await getLatestFiles(mod, newVersion)
 		}
-		return [mod, null]
+		console.error(`The mod ${mod} does not have a release for Minecraft version ${mcVersion}!
+It may have a beta/alpha release, but you have disabled beta/alpha releases in the config file. To enable beta/alpha releases, set "unsafe.allowBeta" to true in the config file.`)
+		process.exit(1)
 	}
+	
+	const allowedRelease = parsed.filter(v => v.version_type === "release" || modlist.unsafe.allowUnstable)[0]
 
-	return [mod, fullRelease.files]
+	if (fullReleaseCount === 0 && modlist.unsafe.allowUnstable)
+		console.warn(`Downloading an unstable version of ${mod}! It's not guaranteed to work, and may cause issues. If your game crashes, the mod is probably not compatible.`)
+
+	console.log(`Found a release for ${mod} (ID: ${allowedRelease.id})`)
+
+	return [mod, allowedRelease.files]
 }
 
-const latestModIds = (await Promise.all(
+const latestModIds = await Promise.all(
 	modlist.mods.map(async mod => getLatestFiles(mod))
-)) 
-
-const notFoundMods = latestModIds.filter(([, files]) => files === null) as [string, null][]
-
-if (notFoundMods.length > 0) {
-	console.error(`Some mods don't have a FULL release for this version of Minecraft:
-${notFoundMods.map(([mod]) => mod).join("\n")}`)
-
+).catch(() => {
+	console.error("Failed to fetch mod data!")
 	process.exit(1)
-}
+})
 
 const oldMods = (await fs.readdir(dotMinecraftMods)).filter(f => f.endsWith(".jar")),
 	skipOldMods: string[] = []
 
-// make temporary directory for downloading mods
 const tempDir = `${dotMinecraftMods}/__temp_downloads__`
 
 await fs.mkdir(tempDir)
-
-// download the latest versions of the mods
 
 for (const [mod, files] of latestModIds as [string, File[]][]) {
 	const latest = files.filter(f => f.primary)[0] ?? files[0]
@@ -172,15 +252,31 @@ for (const [mod, files] of latestModIds as [string, File[]][]) {
 
 	const downloadHash = crypto.createHash(hashAlgo).update(buffer).digest("hex")
 
-	if (downloadHash !== hash) {
-		console.error(`Downloaded file ${latest.filename} has failed checksum verification with algorithm ${hashAlgo}`)
+	if (downloadHash !== hash && !modlist.unsafe.allowFailHash) {
+		console.error(`Downloaded file ${latest.filename} has failed checksum verification with algorithm ${hashAlgo}
+Expected hash: ${hash}
+Got: ${downloadHash}
+To disable this check, set "unsafe.allowFailHash" to true in the config file.`)
 		process.exit(1)
-	}
+	} else if (modlist.unsafe.allowFailHash) {
+		console.warn(`Downloaded file ${latest.filename} has failed checksum verification with algorithm ${hashAlgo}
+Expected hash: ${hash}
+Got: ${downloadHash}
+This mod may be corrupted or be infected with malware. Please check the file manually in a safe enviorment before running the game. If in doubt, contact the mod author or remove the mod.`)
 
 	await fs.writeFile(`${tempDir}/${latest.filename}`, buffer)
+	}
 }
 
-for (const mod of oldMods.filter(f => !skipOldMods.includes(f))) await fs.unlink(`${dotMinecraftMods}/${mod}`)
+const inp = await input("The old mods are about to be deleted. Do you wish to continue? [Y/n] ")
+
+if (/^n/i.test(inp)) {
+	console.log("Aborting... Your old mods are still in the mods folder.")
+	await fs.rmdir(tempDir)
+	process.exit(0)
+}
+
+for (const mod of oldMods.filter(m => !skipOldMods.includes(m))) await fs.unlink(`${dotMinecraftMods}/${mod}`)
 
 for (const mod of await fs.readdir(tempDir)) await fs.rename(`${tempDir}/${mod}`, `${dotMinecraftMods}/${mod}`)
 
