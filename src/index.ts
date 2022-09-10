@@ -38,12 +38,14 @@ switch (os) {
 		break
 }
 
-if (os === "unknown" && process.argv.length < 3) {
+const nonOptionArgs = process.argv.filter(v => !v.startsWith("-"))
+
+if (os === "unknown" && nonOptionArgs.length < 3) {
 	console.error("Unknown OS and no mod folder path specified! Please specify a mod folder path.")
 	process.exit(1)
 }
 
-dotMinecraftMods = process.argv[2] ?? dotMinecraftMods
+dotMinecraftMods = nonOptionArgs.pop() ?? dotMinecraftMods
 
 const configPath = `${dotMinecraftMods}/.modlist.json`
 
