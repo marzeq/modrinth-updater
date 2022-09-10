@@ -8,6 +8,9 @@ import { z } from "zod"
 if (process.argv.find(v => "--help" === v || "-h" === v)) {
 	console.log(`Usage: <command> [path to mods folder if it's somewhere else (optional)]`)
 	process.exit(0)
+} else if (process.argv.find(v => "--version" === v || "-v" === v)) {
+	console.log(`Version: 0.0.10`)
+	process.exit(0)
 }
 
 let os: "windows" | "linux" | "macos" | "unknown" = "unknown"
@@ -45,7 +48,7 @@ if (os === "unknown" && nonOptionArgs.length < 3) {
 	process.exit(1)
 }
 
-dotMinecraftMods = nonOptionArgs.pop() ?? dotMinecraftMods
+dotMinecraftMods = nonOptionArgs[2] ?? dotMinecraftMods
 
 const configPath = `${dotMinecraftMods}/.modlist.json`
 
