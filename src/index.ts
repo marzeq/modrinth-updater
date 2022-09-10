@@ -9,7 +9,7 @@ if (process.argv.find(v => "--help" === v || "-h" === v)) {
 	console.log(`Usage: <command> [path to mods folder if it's somewhere else (optional)]`)
 	process.exit(0)
 } else if (process.argv.find(v => "--version" === v || "-v" === v)) {
-	console.log(`Version: 0.0.10`)
+	console.log(`Version: 0.0.11`)
 	process.exit(0)
 }
 
@@ -123,10 +123,10 @@ Do you wish to continue? AGAIN, DO NOT CONTINUE IF YOU DON'T KNOW WHAT YOU'RE DO
 				process.exit(0)
 			
 			console.log("Ok, you asked for it.")
-		} else if (k === "allowBeta") {
+		} else if (k === "allowUnstable") {
 			const inp = await input(`!!! WARNING !!!
-Unsafe mode enabled: allowBeta!
-This will allow mods to be installed even if they are marked as beta.
+Unsafe mode enabled: allowUnstable!
+This will allow mods to be installed even if they are marked as unstable.
 These mods are not guaranteed to work, and may cause issues.
 If your game crashes/has other issues with this option enabled, it's probably because of a beta mod.
 !!! WARNING !!!
