@@ -5,7 +5,7 @@ import fetch from "node-fetch"
 import { input } from "@marzeq/awaitinput"
 import { z } from "zod"
 
-if (process.argv.find(v => /--help|-h|--?|-?|\/help|\/h|\/\?/.test(v))) {
+if (process.argv.find(v => "--help" === v || "-h" === v)) {
 	console.log(`Usage: <command> [path to mods folder if it's somewhere else (optional)]`)
 	process.exit(0)
 }
