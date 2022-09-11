@@ -210,6 +210,7 @@ const oldMods = (await fs.readdir(dotMinecraftMods)).filter(f => f.endsWith(".ja
 
 const tempDir = `${dotMinecraftMods}/__temp_downloads__`
 
+await fs.rmdir(tempDir, { recursive: true }).catch(() => {})
 await fs.mkdir(tempDir)
 
 for (const [mod, files] of latestModIds as [string, File[]][]) {
@@ -273,9 +274,9 @@ To disable this check, set "unsafe.allowFailHash" to true in the config file.`)
 Expected hash: ${hash}
 Got: ${downloadHash}
 This mod may be corrupted or be infected with malware. Please check the file manually in a safe enviorment before running the game. If in doubt, contact the mod author or remove the mod.`)
+	}
 
 	await fs.writeFile(`${tempDir}/${latest.filename}`, buffer)
-	}
 }
 
 const inp = await input("The old mods are about to be deleted. Do you wish to continue? [Y/n] ")
