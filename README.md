@@ -56,12 +56,25 @@ For example, this is my config file:
 ## Usage
 
 ```
-$ npx modrinth-updater [path to mods folder if it's somewhere else (optional)]
+$ npx modrinth-updater
 ```
 
 You can also install the package globally and run it like this:
 
 ```
 $ npm install -g modrinth-updater
-$ modrinth-updater [path to mods folder if it's somewhere else (optional)]
+$ modrinth-updater
+```
+
+## Help
+
+```
+Usage: modrinth-updater [options]
+
+A tool to update your mods from Modrinth
+
+Options:
+  -V, --version           output the version number
+  -m, --modfolder <path>  The path to your mods folder
+  -h, --help              display help for command
 ```

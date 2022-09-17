@@ -5,8 +5,7 @@ export const modlistValidator = z.object({
 	loaderType: z.enum(["fabric", "forge", "quilt", "liteloader"]),
 	unsafe: z.object({
 		allowFailHash: z.boolean(),
-		allowUnstable: z.boolean(),
-        allowProprietary: z.boolean()
+		allowUnstable: z.boolean()
 	}),
 	mods: z.array(z.string())
 })

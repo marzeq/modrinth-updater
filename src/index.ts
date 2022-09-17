@@ -7,7 +7,7 @@ import { cLogNoEnd, downloadFile, getLatestRelease, getModsFolderPath, getOrGene
 const main = async () => {
 	const program = new commander.Command()
 		.name("modrinth-updater")
-		.version("1.0.0")
+		.version("1.0.1")
 		.description("A tool to update your mods from Modrinth")
 		.option("-m, --modfolder <path>", "The path to your mods folder")
 
