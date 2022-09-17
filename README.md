@@ -2,8 +2,6 @@
 
 A simple CLI tool to update your mods from a config file using the modrinth API
 
-**THIS IS BETA SOFTWARE!!! MAKE SURE TO BACKUP YOUR MODS FOLDER BEFORE YOU USE THIS SOFTWARE!!! I AM NOT RESPONSIBLE FOR ANY DAMAGE CAUSED BY THIS SOFTWARE!!!**
-
 ## Setup
 
 
@@ -53,7 +51,9 @@ For example, this is my config file:
 }
 ```
 
-## Usage
+## Installation
+
+You can run this tool directly with npx:
 
 ```
 $ npx modrinth-updater
@@ -78,3 +78,10 @@ Options:
   -m, --modfolder <path>  The path to your mods folder
   -h, --help              display help for command
 ```
+
+
+## Disclaimer
+
+Make sure you have a backup of your mods folder before running this tool. I am not responsible for any damage caused by this tool.
+
+I will not help you if you can't use the command line. If you don't know how to use the command line, you probably shouldn't be using this tool.
