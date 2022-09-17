@@ -46,7 +46,8 @@ For example, this is my config file:
         "logical-zoom",
         "modmenu",
         "no-chat-reports",
-        "starlight"
+        "starlight",
+        "lazydfu"
     ]
 }
 ```
