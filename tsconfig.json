@@ -2,7 +2,7 @@
     "compilerOptions": {
         "target": "es2021",
         "outDir": "./dist",
-        "module": "Node16",
+        "module": "commonjs",
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "strict": true,
