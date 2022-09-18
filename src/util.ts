@@ -4,6 +4,7 @@ import fetch from "node-fetch"
 
 import { apiResponseValidator, File, ModListConfig, modlistValidator } from "./types"
 import input from "@marzeq/awaitinput"
+import chalk from "chalk"
 
 export const api = (str: string, queryParams: Record<string, string>) => {
 	if (str.startsWith("/"))
@@ -11,6 +12,11 @@ export const api = (str: string, queryParams: Record<string, string>) => {
 
 	return `https://api.modrinth.com/v2/${str}${queryParams ? "?" + new URLSearchParams(queryParams).toString() : ""}`
 }
+
+export const error = (msg: string, prefix?: string) => console.error((prefix ?? "") + chalk.bold.red("✘ ") + chalk.red(msg))
+export const warn = (msg: string, prefix?: string) => console.warn((prefix ?? "") + chalk.bold.yellow("! ") + chalk.yellow(msg))
+export const info = (msg: string, prefix?: string) => console.info((prefix ?? "") + chalk.bold.blue("ℹ ") + chalk.blue(msg))
+export const success = (msg: string, prefix?: string) => console.info((prefix ?? "") + chalk.bold.green("✓ ") + chalk.green(msg))
 
 export const getLatestRelease = async (mod: string, modlist: ModListConfig): Promise<[string, File]> => {
 	const res = await fetch(api(`/project/${mod}/version`, {
@@ -20,7 +26,7 @@ export const getLatestRelease = async (mod: string, modlist: ModListConfig): Pro
 		json = (await res.json()) as any
 	
 	if (!res.ok) {
-		console.error(`Failed to fetch mod data for ${mod}!`)
+		error(`Failed to fetch mod data for ${mod}!`)
 		process.exit(1)
 	}
 
@@ -29,14 +35,14 @@ export const getLatestRelease = async (mod: string, modlist: ModListConfig): Pro
 	const allowed = parsed.filter(v => v.version_type === "release" || modlist.unsafe.allowUnstable)
 
 	if (allowed.length === 0) {
-		console.error(`No files found for ${mod}!`)
+		error(`No files found for ${mod}!`)
 		process.exit(1)
 	}
 
 	const latest = allowed[0]
 
 	if (latest.version_type !== "release")
-		console.warn(`Downloading an unstable version of ${mod}! It's not guaranteed to work, and may cause issues. If your game crashes, the mod is probably not compatible.`)
+		warn(`Downloading an unstable version of ${mod}! It's not guaranteed to work, and may cause issues. If your game crashes, the mod is probably not compatible.`)
 
 	return [mod, latest.files.filter(f => f.primary)[0] ?? latest.files[0]]
 }
@@ -45,7 +51,7 @@ export const downloadFile = async (url: string, path: string) => {
 	const res = await fetch(url)
 
 	if (!res.ok) {
-		console.error(`Failed to download file from ${url}!`)
+		error(`Failed to download file from ${url}!`)
 		process.exit(1)
 	}
 
@@ -94,7 +100,7 @@ export const getOrGenerateConfig = async (configPath: string): Promise<ModListCo
 }`
 		)
 
-        console.log(`Generated default config at ${configPath}`)
+        info(`Generated default config at ${configPath}`)
 	}
 
 	const rawModlist: ModListConfig = JSON.parse(await fs.readFile(configPath, "utf8"))
@@ -102,7 +108,7 @@ export const getOrGenerateConfig = async (configPath: string): Promise<ModListCo
 	const parseResult = modlistValidator.safeParse(rawModlist)
 
 	if (!parseResult.success) {
-		console.error(`Invalid config file!
+		error(`Invalid config file!
 ${parseResult.error}`)
 		process.exit(1)
 	}
@@ -110,44 +116,12 @@ ${parseResult.error}`)
 	return parseResult.data
 }
 
-const formatWarn = (text: string, opt: string, severe: boolean = false) => `!!! WARNING !!!
-Unsafe mode enabled: ${opt}
-${text}${severe ? "\nDO NOT ENABLE THIS OPTION IF YOU DO NOT KNOW WHAT YOU ARE DOING!!!\nTHE AUTHOR OF THIS PROGRAM IS NOT RESPONSIBLE FOR __ANY__ DAMAGE CAUSED BY THIS OPTION." : ""}
-!!! WARNING !!!
-
-Do you wish to continue?${severe ? " AGAIN, DO NOT CONTINUE IF YOU DON'T KNOW WHAT YOU'RE DOING" : ""} [y/N] `
-
 export const warnForUnstable = async (modlist: ModListConfig) => {
-    for (const [k, v] of Object.entries(modlist.unsafe)) {
-		if (v === true) {
-			if (k === "allowFailHash") {
-				const inp = await input(formatWarn(`This will allow mods to be installed even if their hash does not match the one specified by the mod author.
-This is a MAJOR security risk, as it allows infected mods to be installed without them being checked.`, k, true))
-				if (!/^y/i.test(inp))
-					process.exit(0)
-				
-				const inp2 = await input("This is a very bad idea, are you sure? [y/N] ")
-
-				if (!/^y/i.test(inp2))
-					process.exit(0)
-				
-				const inp3 = await input("Are you REALLY sure? [y/N] ")
-
-				if (!/^y/i.test(inp3))
-					process.exit(0)
-				
-				const inp4 = await input("Are you REALLY REALLY sure? THIS IS YOUR LAST CHANCE TO SAY NO [y/N] ")
-
-				if (!/^y/i.test(inp4))
-					process.exit(0)
-			} else if (k === "allowUnstable") {
-				const inp = await input(formatWarn(`This will allow mods to be installed even if they are marked as unstable.
-These mods are not guaranteed to work, and may cause issues.
-If your game crashes/has other issues with this option enabled, it's probably because of a mod marked as unstable.`, k))
-
-				if (!/^y/i.test(inp))
-					process.exit(0)
-			}
+    for (const [k] of Object.entries(modlist.unsafe).filter(([, v]) => v === true)) {
+		if (k === "allowFailHash") {
+			warn("You have enabled allowFailHash. This means that if a mod's hash doesn't match the one in the config, it will still be downloaded. This is not recommended, as the mod may be corrupted or malicious.")
+		} else if (k === "allowUnstable") {
+			warn("You have enabled allowUnstable. This means that unstable versions of mods will be downloaded. This is not recommended, as the mod may cause issues and may even crash your game.")
 		}
 	}
 }
