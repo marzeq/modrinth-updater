@@ -2,7 +2,7 @@
 import fs from "node:fs/promises"
 import crypto from "node:crypto"
 import commander from "commander"
-import { cLogNoEnd, downloadFile, getLatestRelease, getModsFolderPath, getOrGenerateConfig, warnForUnstable } from "./util"
+import { downloadFile, getLatestRelease, getModsFolderPath, getOrGenerateConfig, warnForUnstable } from "./util"
 
 const main = async () => {
 	const program = new commander.Command()
@@ -58,79 +58,51 @@ const main = async () => {
 	
 	console.log("Beginning download process... \n")
 
-	for (const mod of modlist.mods) {
-		cLogNoEnd(`${mod}: Fetching latest release... `)
-
+	const downloadProcess = async (mod: string) => {
 		const [name, file] = await getLatestRelease(mod, modlist).catch(() => {
 			console.error(`Failed to get latest release for ${mod}!`)
 			process.exit(1)
 		})
 
-		cLogNoEnd("Fetched! ")
-
 		const oldMod = oldModsAndHashes.find(([mod]) => mod === `${name}.jar`)
 
 		if (file.hashes.sha256) {
 			if (oldMod && oldMod[1].sha256 === file.hashes.sha256) {
-				cLogNoEnd("Already up to date!\n")
+				console.log(`${mod} is already up to date! (sha256)`)
 				noRemove.add(oldMod[0])
-				continue
+				return
 			}
 		}
 
 		if (oldMod && oldMod[1].sha1 === file.hashes.sha1) {
-			cLogNoEnd("Already up to date!\n")
 			noRemove.add(oldMod[0])
-			continue
+			console.log(`${mod} is already up to date! (sha1)`)
+			return
 		}
 
-		cLogNoEnd("Downloading... ")
-
 		await downloadFile(file.url, `${temporaryFolder}/${name}.jar`).catch(() => {
-			cLogNoEnd("Failed to download.\n")
 			process.exit(1)
 		})
 
-		cLogNoEnd("Downloaded! ")
-
-		cLogNoEnd("Verifying hash... ")
-
 		const localFile = await fs.readFile(`${temporaryFolder}/${name}.jar`)
 
-		if (file.hashes.sha256) {
-			const sha256 = crypto.createHash("sha256")
+		const checkHash = (hash: string, type: "sha256" | "sha1") => {
+			const hashFunc = crypto.createHash(type)
 
-			sha256.update(localFile)
+			hashFunc.update(localFile)
 
-			if (sha256.digest("hex") !== file.hashes.sha256) {
-				if (!modlist.unsafe.allowFailHash) {
-					cLogNoEnd("Hash mismatch with sha256!\n")
-					process.exit(1)
-				} else {
-					cLogNoEnd("Hash mismatch with sha256! Continuing anyway... ")
-				}
-			} else {
-				cLogNoEnd("Hash verified with sha256! ")
-			}
-		} else {
-			const sha1 = crypto.createHash("sha1")
-
-			sha1.update(localFile)
-
-			if (sha1.digest("hex") !== file.hashes.sha1) {
-				if (!modlist.unsafe.allowFailHash) {
-					cLogNoEnd("Hash mismatch with sha1!\n")
-					process.exit(1)
-				} else {
-					cLogNoEnd("Hash mismatch with sha1! Continuing anyway... ")
-				}
-			} else {
-				cLogNoEnd("Hash verified with sha1! ")
+			if (hashFunc.digest("hex") !== hash) {
+				console.log(`Hash mismatch for ${mod}! (${type})`)
+				process.exit(1)
 			}
 		}
 
-		console.log("Done!")
+		file.hashes.sha256 ? checkHash(file.hashes.sha256, "sha256") : checkHash(file.hashes.sha1, "sha1")
+
+		console.log(`Downloaded ${mod}!`)
 	}
+
+	await Promise.all(modlist.mods.map(downloadProcess))
 
 	console.log("\nFinished downloading all mods!\n")
 

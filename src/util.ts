@@ -151,9 +151,3 @@ If your game crashes/has other issues with this option enabled, it's probably be
 		}
 	}
 }
-
-export const cLogNoEnd = (...data: any[]) => {
-	const text = data.map(String).join(" ")
-
-	process.stdout.write(text)
-}
