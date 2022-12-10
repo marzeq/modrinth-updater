@@ -4,22 +4,24 @@ A simple CLI tool to update your mods from a config file using the modrinth API
 
 ## Setup
 
-
 Create a .modlist.json file in your mods folder that looks something like this:
 
 ```json
 {
-    "minecraftVersion": "(the minecraft version you play on)",
-    "loaderType": "(fabric, forge, quilt or liteloader)",
-    "unsafe": {
-        "allowUnstable": "(true or false)",
-        "allowFailHash": "(true or false)"
-    },
-    "mods": [
-        "(last part of the project's url on modrinth e.g. fabric-api for the Fabric API)",
-        "(put more mods on a new line and make sure there's a comma at the end of the previous line)",
-        "(and so on...)",
-        "(last one)"
+	"minecraftVersion": "(the minecraft version you play on)",
+	"loaderType": "(fabric, forge, quilt or liteloader)",
+	"unsafe": {
+		"allowUnstable": "(true or false)",
+		"allowFailHash": "(true or false)"
+	},
+	"mods": [
+		"(last part of the project's url on modrinth e.g. fabric-api for the Fabric API)",
+		"(put more mods on a new line and make sure there's a comma at the end of the previous line)",
+		"(and so on...)"
+	],
+	"externalMods": [
+        "(the filename of a mod that is not on modrinth and should be kept when updating, (including the .jar extension)",
+        "(and so on...)"
     ]
 }
 ```
@@ -28,27 +30,28 @@ For example, this is my config file:
 
 ```json
 {
-    "minecraftVersion": "1.19.2",
-    "loaderType": "fabric",
-    "unsafe": {
-        "allowUnstable": false,
-        "allowFailHash": false
-    },
-    "mods": [
-        "fabric-api",
-        "sodium",
-        "betterf3",
-        "capes",
-        "fabric-language-kotlin",
-        "iris",
-        "lambdynamiclights",
-        "lithium",
-        "logical-zoom",
-        "modmenu",
-        "no-chat-reports",
-        "starlight",
-        "lazydfu"
-    ]
+	"minecraftVersion": "1.19.2",
+	"loaderType": "fabric",
+	"unsafe": {
+		"allowUnstable": false,
+		"allowFailHash": false
+	},
+	"mods": [
+		"fabric-api",
+		"sodium",
+		"betterf3",
+		"capes",
+		"fabric-language-kotlin",
+		"iris",
+		"lambdynamiclights",
+		"lithium",
+		"logical-zoom",
+		"modmenu",
+		"no-chat-reports",
+		"starlight",
+		"lazydfu"
+	],
+	"externalMods": []
 }
 ```
 
@@ -79,7 +82,6 @@ Options:
   -m, --modfolder <path>  The path to your mods folder
   -h, --help              display help for command
 ```
-
 
 ## Disclaimer
 

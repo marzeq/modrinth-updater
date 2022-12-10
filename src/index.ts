@@ -7,7 +7,7 @@ import { downloadFile, error, getLatestRelease, getModsFolderPath, getOrGenerate
 const main = async () => {
 	const program = new commander.Command()
 		.name("modrinth-updater")
-		.version("1.0.3")
+		.version("1.0.5")
 		.description("A tool to update your mods from Modrinth")
 		.option("-m, --modfolder <path>", "The path to your mods folder")
 
@@ -40,22 +40,27 @@ const main = async () => {
 		}
 	}
 
-	const oldModsAndHashes = await Promise.all(oldModFolder.map(async mod => {
-		const sha256 = crypto.createHash("sha256"),
-			sha1 = crypto.createHash("sha1")
+	const oldModsAndHashes = await Promise.all(
+			oldModFolder.map(async mod => {
+				const sha256 = crypto.createHash("sha256"),
+					sha1 = crypto.createHash("sha1")
 
-		const file = await fs.readFile(`${modfolder}/${mod}`)
+				const file = await fs.readFile(`${modfolder}/${mod}`)
 
-		sha256.update(file)
-		sha1.update(file)
+				sha256.update(file)
+				sha1.update(file)
 
-		return [mod, {
-			sha256: sha256.digest("hex"),
-			sha1: sha1.digest("hex")
-		}] as const
-	})),
+				return [
+					mod,
+					{
+						sha256: sha256.digest("hex"),
+						sha1: sha1.digest("hex")
+					}
+				] as const
+			})
+		),
 		noRemove = new Set<string>()
-	
+
 	info("Beginning download process... \n")
 
 	const downloadProcess = async (mod: string) => {
@@ -113,7 +118,7 @@ const main = async () => {
 	info("Removing old mods...")
 
 	for (const mod of oldModsAndHashes) {
-		if (!noRemove.has(mod[0])) {
+		if (!noRemove.has(mod[0]) && !modlist.externalMods.includes(mod[0])) {
 			await fs.unlink(`${modfolder}/${mod[0]}`)
 		}
 	}

@@ -7,7 +7,8 @@ export const modlistValidator = z.object({
 		allowFailHash: z.boolean(),
 		allowUnstable: z.boolean()
 	}),
-	mods: z.array(z.string())
+	mods: z.array(z.string()),
+	externalMods: z.array(z.string())
 })
 
 export type ModListConfig = z.infer<typeof modlistValidator>
@@ -24,8 +25,10 @@ export const fileValidator = z.object({
 
 export type File = z.infer<typeof fileValidator>
 
-export const apiResponseValidator = z.array(z.object({
-    version_type: z.string(),
-    id: z.string(),
-    files: z.array(fileValidator)
-}))
+export const apiResponseValidator = z.array(
+	z.object({
+		version_type: z.string(),
+		id: z.string(),
+		files: z.array(fileValidator)
+	})
+)
