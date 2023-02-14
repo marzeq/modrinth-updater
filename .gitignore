@@ -115,3 +115,6 @@ desktop.ini
 .Spotlight-V100
 .Trashes
 ._*
+
+# bin
+bin/

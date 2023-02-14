@@ -85,28 +85,27 @@ export const getModsFolderPath = () => {
 }
 
 export const getOrGenerateConfig = async (configPath: string): Promise<ModListConfig> => {
+	let content: string
 	try {
-		await fs.access(configPath, fs.constants.F_OK)
+		content = await fs.readFile(configPath, "utf8")
 	} catch (e) {
-		await fs.writeFile(
-			configPath,
-			`{
-	"minecraftVersion": "1.19.2",
-	"loaderType": "fabric",
-	"unsafe": {
-		"allowFailHash": false,
-		"allowUnstable": false,
-		"allowProprietary": true
-	},
-	"mods": [],
-	"externalMods": []
-}`
-		)
+		content = `{
+			"minecraftVersion": "1.19.3",
+			"loaderType": "fabric",
+			"unsafe": {
+				"allowFailHash": false,
+				"allowUnstable": false,
+				"allowProprietary": true
+			},
+			"mods": [],
+			"externalMods": []
+		}`
+		await fs.writeFile(configPath, content)
 
 		info(`Generated default config at ${configPath}`)
 	}
 
-	const rawModlist: ModListConfig = JSON.parse(await fs.readFile(configPath, "utf8"))
+	const rawModlist: ModListConfig = JSON.parse(content)
 
 	const parseResult = modlistValidator.safeParse(rawModlist)
 
